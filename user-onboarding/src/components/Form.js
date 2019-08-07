@@ -1,10 +1,10 @@
-import React, {useState, useEffect} from 'react';
+import React, { useEffect } from 'react';
 import  axios from 'axios';
-import { Form, Field, withFormik, validateYupSchema } from 'formik';
+import { Form, Field, withFormik } from 'formik';
 import * as Yup from 'yup';
 import {Div, UserDiv } from './styledComponents';
-const UserForm = ({errors, touched, values, handleSubmit, status}) => {
-    const [user, setUser] = useState([]);
+const UserForm = ({errors, touched, values, status, user, setUser}) => {
+ 
 
     useEffect(() => {
         if(status) {
@@ -46,7 +46,7 @@ const UserForm = ({errors, touched, values, handleSubmit, status}) => {
             <h1>Users</h1>
             <UserDiv>
             {user.map(user => {
-               return <p key={user.id}>{user.name}</p>
+               return <p key={user.id}>{user.name}<br />{user.role}</p>
             })}
             </UserDiv>
         </div>
@@ -67,22 +67,25 @@ const FormikUserForm = withFormik({
     },
 
     validationSchema: Yup.object().shape({
-        name: Yup.string().required(),
-        eMail: Yup.string().email('Valid E-Mail Required').test(  'waffleTest',
+        name: Yup.string().required('Please input your name'),
+        eMail: Yup.string().email('Valid E-Mail Required').test( 'waffleTest',
         'E-Mail already exists',
-        value => value != 'waffle@syrup.com').required(),
-        password: Yup.string().required().min(6, 'Too Short'),
-        role: Yup.string().required(),
+        value => value !== 'waffle@syrup.com').required('Valid E-Mail Required'),
+        password: Yup.string().required().min(6, 'Password Too Short'),
+        role: Yup.string().required('Please select a Role'),
+        terms: Yup.bool().oneOf([true], "Please agree to the terms of service")
     }),
 
-    handleSubmit(values, { setStatus }) {
+    handleSubmit(values, { setStatus, resetForm }) {
         console.log(values.eMail)
         axios
             .post('https://reqres.in/api/users.', values)
             .then(res => {
                 setStatus(res.data);
+                resetForm();
             })
             .catch(err => console.log(err))
+            
     }
 })(UserForm);
 
